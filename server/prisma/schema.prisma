@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("CLIENT") // Рекомендую использовать "COACH" для консистентности с фронтом
+  createdAt    DateTime  @default(now())
+  
+  // Связи
+  workouts     Workout[] @relation("ClientWorkouts") // Тренировки, на которые записан клиент
+  coachSlots   Workout[] @relation("CoachWorkouts")  // Слоты, которые создал этот тренер
+  reports      Report[]  @relation("ClientReports")
+  comments     Comment[] @relation("TrainerComments") // Комментарии, которые написал этот тренер
+}
+
+model Workout {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  timeSlot  String   
+  status    String   @default("FREE") // По умолчанию "FREE", при записи меняем на "BOOKED"
+  
+  // Кто записался (Клиент)
+  clientId  Int?
+  client    User?    @relation("ClientWorkouts", fields: [clientId], references: [id])
+
+  // Кто проводит (Тренер)
+  coachId   Int?
+  coach     User?    @relation("CoachWorkouts", fields: [coachId], references: [id])
+}
+
+model Report {
+  id          Int       @id @default(autoincrement())
+  date        DateTime  @default(now())
+  weight      Float?
+  steps       Int?
+  reflection  String?
+  photos      String?   
+  
+  clientId    Int
+  client      User      @relation("ClientReports", fields: [clientId], references: [id])
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  createdAt DateTime @default(now())
+  
+  reportId  Int
+  report    Report   @relation(fields: [reportId], references: [id])
+
+  // Кто написал комментарий
+  trainerId Int
+  trainer   User     @relation("TrainerComments", fields: [trainerId], references: [id])
+}
