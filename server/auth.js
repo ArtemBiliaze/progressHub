@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-progress-key-2026';
 
 // 1. Регистрация нового пользователя
 router.post('/register', async (req, res) => {
-  const { email, password, name, role } = req.body;
+  const { email, password, name } = req.body;
 
   try {
     // Проверяем, не занят ли email
@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
         email,
         name,
         passwordHash: hashedPassword,
-        role: role || 'CLIENT' // По умолчанию создаем клиента
+        role: 'CLIENT' // По умолчанию создаем клиента
       }
     });
 
