@@ -1,11 +1,11 @@
 import express from 'express';
 import prisma from './prismaClient.js';
-import { authenticateToken } from './middleware/authMiddleware.js';
+import { authenticateToken, requireRole } from './middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // 1. ОТПРАВИТЬ ОТЧЕТ (CLIENT)
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, requireRole('CLIENT'), async (req, res) => {
   const { weight, steps, reflection, photos } = req.body;
   try {
     const report = await prisma.report.create({

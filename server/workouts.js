@@ -1,15 +1,11 @@
 import express from 'express';
 import prisma from './prismaClient.js';
-import { authenticateToken } from './middleware/authMiddleware.js';
+import { authenticateToken, requireRole } from './middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // 1. СОЗДАТЬ СЛОТ (Только COACH)
-router.post('/', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'COACH') {
-    return res.status(403).json({ error: 'Только тренер создает слоты' });
-  }
-
+router.post('/', authenticateToken, requireRole('COACH'), async (req, res) => {
   const { date, timeSlot } = req.body;
   try {
     const newWorkout = await prisma.workout.create({
@@ -27,7 +23,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // 2. ЗАПИСАТЬСЯ (Только CLIENT)
-router.patch('/book/:id', authenticateToken, async (req, res) => {
+router.patch('/book/:id', authenticateToken, requireRole('CLIENT'), async (req, res) => {
   try {
     const workout = await prisma.workout.findUnique({ where: { id: parseInt(req.params.id) } });
 
