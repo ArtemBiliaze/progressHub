@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import HomePage from './pages/HomePage'; // <-- ДОБАВЛЕН ИМПОРТ НОВОЙ СТРАНИЦЫ
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
@@ -14,23 +15,34 @@ function App() {
     try {
       const decoded = jwtDecode(token);
       userRole = decoded.role;
-    } catch (e) {
+    } catch  {
       localStorage.removeItem('token');
     }
   }
 
   const logout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    window.location.href = '/'; // <-- ИЗМЕНЕНО: при выходе кидаем на главную (обложку)
   };
 
   return (
     <Router>
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-        <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <Link to="/" style={{ fontWeight: 'bold', color: '#2563eb', textDecoration: 'none' }}>ProgressHub 🛡️</Link>
-            {token && (
+      {/* Убрали жесткие padding для контейнера, чтобы обложка могла занять 100% ширины */}
+      <div
+  style={{
+    width: '100%',
+    maxWidth: token ? '900px' : '100%',
+    margin: '0 auto',
+    padding: token ? '20px' : '0',
+    boxSizing: 'border-box'
+  }}
+>
+        
+        {/* Меню показываем ТОЛЬКО если пользователь авторизован */}
+        {token && (
+          <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '20px' }}>
+              <Link to="/" style={{ fontWeight: 'bold', color: '#2563eb', textDecoration: 'none' }}>ProgressHub 🛡️</Link>
               <>
                 <Link to="/" style={{ textDecoration: 'none', color: '#333' }}>Дашборд</Link>
                 
@@ -43,26 +55,24 @@ function App() {
                 
                 <Link to="/schedule" style={{ textDecoration: 'none', color: '#333' }}>Расписание</Link>
               </>
-            )}
-          </div>
+            </div>
 
-          <div>
-            {token ? (
+            <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <b style={{ color: userRole === 'COACH' ? '#d97706' : '#059669' }}>
                   {userRole === 'COACH' ? '👨‍🏫 ТРЕНЕР' : '💪 КЛИЕНТ'}
                 </b>
                 <button onClick={logout} style={{ padding: '5px 10px', cursor: 'pointer' }}>Выйти</button>
               </div>
-            ) : (
-              <Link to="/login" style={{ textDecoration: 'none' }}>Войти</Link>
-            )}
-          </div>
-        </nav>
+            </div>
+          </nav>
+        )}
 
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/login" element={token ? <Navigate to="/" /> : <Login />} />
+          
+          {/* ИЗМЕНЕННАЯ СТРОЧКА: Если токена нет, показываем HomePage (обложку) вместо редиректа на /login */}
+          <Route path="/" element={token ? <Dashboard /> : <HomePage />} />
           
           {/* РАЗДЕЛЯЕМ РОУТЫ */}
           <Route 
@@ -74,7 +84,7 @@ function App() {
             element={token && userRole === 'CLIENT' ? <SendReport /> : <Navigate to="/" />} 
           />
           
-          <Route path="/schedule" element={token ? <Schedule /> : <Navigate to="/login" />} />
+          <Route path="/schedule" element={token ? <Schedule /> : <Navigate to="/" />} />
         </Routes>
       </div>
     </Router>
