@@ -1,13 +1,10 @@
 import express from 'express';
 import prisma from './prismaClient.js';
-import { authenticateToken } from './middleware/authMiddleware.js';
+import { authenticateToken, requireRole } from './middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'COACH') {
-    return res.status(403).json({ error: 'Только тренер может давать советы' });
-  }
+router.post('/', authenticateToken, requireRole('COACH'), async (req, res) => {
 
   const { reportId, text } = req.body;
   try {
