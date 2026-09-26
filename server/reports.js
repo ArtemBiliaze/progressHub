@@ -29,9 +29,9 @@ router.get('/', authenticateToken, async (req, res) => {
 
   try {
     const reports = await prisma.report.findMany({
-      where: role === 'COACH' 
-        ? {} // В будущем тут будет { coachId: userId } если привяжем клиентов к тренеру
-        : { clientId: userId }, // КЛИЕНТ ВИДИТ ТОЛЬКО СВОЁ
+      where: role === 'COACH'
+        ? { client: { coachId: userId } }
+        : { clientId: userId },
       include: { 
         client: { select: { name: true } },
         comments: true 
