@@ -13,58 +13,65 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
   name         String
   passwordHash String
-  role         String    @default("CLIENT") // Рекомендую использовать "COACH" для консистентности с фронтом
-  createdAt    DateTime  @default(now())
-  
-  // Связи
-  workouts     Workout[] @relation("ClientWorkouts") // Тренировки, на которые записан клиент
-  coachSlots   Workout[] @relation("CoachWorkouts")  // Слоты, которые создал этот тренер
-  reports      Report[]  @relation("ClientReports")
-  comments     Comment[] @relation("TrainerComments") // Комментарии, которые написал этот тренер
+  role         String   @default("CLIENT")
+  createdAt    DateTime @default(now())
+
+  // Связь тренер → клиенты
+  coachId Int?
+  coach   User?  @relation("CoachClients", fields: [coachId], references: [id])
+  clients User[] @relation("CoachClients")
+
+  // Остальные связи
+  workouts   Workout[] @relation("ClientWorkouts")
+  coachSlots Workout[] @relation("CoachWorkouts")
+  reports    Report[]  @relation("ClientReports")
+  comments   Comment[] @relation("TrainerComments")
+
+  @@index([coachId])
 }
 
 model Workout {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  timeSlot  String   
-  status    String   @default("FREE") // По умолчанию "FREE", при записи меняем на "BOOKED"
-  
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  timeSlot String
+  status   String   @default("FREE") // По умолчанию "FREE", при записи меняем на "BOOKED"
+
   // Кто записался (Клиент)
-  clientId  Int?
-  client    User?    @relation("ClientWorkouts", fields: [clientId], references: [id])
+  clientId Int?
+  client   User? @relation("ClientWorkouts", fields: [clientId], references: [id])
 
   // Кто проводит (Тренер)
-  coachId   Int?
-  coach     User?    @relation("CoachWorkouts", fields: [coachId], references: [id])
+  coachId Int?
+  coach   User? @relation("CoachWorkouts", fields: [coachId], references: [id])
 }
 
 model Report {
-  id          Int       @id @default(autoincrement())
-  date        DateTime  @default(now())
-  weight      Float?
-  steps       Int?
-  reflection  String?
-  photos      String?   
-  
-  clientId    Int
-  client      User      @relation("ClientReports", fields: [clientId], references: [id])
-  comments    Comment[]
-  createdAt   DateTime  @default(now())
+  id         Int      @id @default(autoincrement())
+  date       DateTime @default(now())
+  weight     Float?
+  steps      Int?
+  reflection String?
+  photos     String?
+
+  clientId  Int
+  client    User      @relation("ClientReports", fields: [clientId], references: [id])
+  comments  Comment[]
+  createdAt DateTime  @default(now())
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
   text      String
   createdAt DateTime @default(now())
-  
-  reportId  Int
-  report    Report   @relation(fields: [reportId], references: [id])
+
+  reportId Int
+  report   Report @relation(fields: [reportId], references: [id])
 
   // Кто написал комментарий
   trainerId Int
-  trainer   User     @relation("TrainerComments", fields: [trainerId], references: [id])
+  trainer   User @relation("TrainerComments", fields: [trainerId], references: [id])
 }
