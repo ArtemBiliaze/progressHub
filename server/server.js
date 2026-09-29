@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { PORT } from './config.js';
 import prisma from './prismaClient.js';
 import authRoutes from './auth.js';
 import workoutRoutes from './workouts.js';
@@ -8,10 +8,7 @@ import reportRoutes from './reports.js';
 import commentRoutes from './comments.js';
 
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());

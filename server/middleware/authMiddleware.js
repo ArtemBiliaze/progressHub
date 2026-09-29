@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-progress-key-2026';
+import { JWT_SECRET } from '../config.js';
 
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];

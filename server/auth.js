@@ -2,9 +2,9 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from './prismaClient.js';
+import { JWT_SECRET } from './config.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'super-progress-key-2026';
 
 // 1. Регистрация нового пользователя
 router.post('/register', async (req, res) => {
